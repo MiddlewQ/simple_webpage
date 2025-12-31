@@ -1,0 +1,36 @@
+
+
+class HTMLNode:
+    
+    def __init__(self, tag=None, value=None, children=None, props=None):        
+        self.tag = tag if tag is not None else ""
+        self.value = value if value is not None else ""
+        self.children = children if children is not None else []
+        self.props = props if props is not None else {}
+
+    def to_html(self):
+        raise NotImplementedError
+
+    def props_to_html(self):
+        if not self.props:
+            return ""
+        return " ".join([f'{key}="{value}"' for key, value in self.props.items()])
+
+    def __repr__(self):
+        return (
+            f"HTMLNode(tag={self.tag}, value={self.value})"
+            f"children=({self.children}, props = {self.props!r})"
+        )
+    
+
+class LeafNode(HTMLNode):
+    def __init__(self, tag, value, props=None):
+        super().__init__(tag, value, props)
+    
+    def to_html(self):
+        if not self.value:
+            raise ValueError
+        if not self.tag:
+            return self.value
+        
+        return f'"<{self.tag}>{self.value}</{self.tag}>"'
