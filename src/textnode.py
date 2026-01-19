@@ -1,7 +1,7 @@
 from enum import Enum 
 
-from leafnode import LeafNode
-from parentnode import ParentNode
+from .leafnode import LeafNode
+from .parentnode import ParentNode
 
 class TextType(Enum):
     TEXT = "text"

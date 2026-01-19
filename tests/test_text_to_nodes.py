@@ -1,7 +1,7 @@
 import unittest
 
-from textnode import TextNode, TextType
-from text_to_nodes import split_nodes_delimiter, split_nodes_image, split_nodes_link, text_to_textnodes
+from src.textnode import TextNode, TextType
+from src.text_to_nodes import split_nodes_delimiter, split_nodes_image, split_nodes_link, text_to_textnodes
 
 class TestSplitNodeDelimiter(unittest.TestCase):
     def test_single_delimiter(self):
