@@ -1,10 +1,5 @@
 from textnode import TextNode, TextType
-
-def split_nodes_image(old_nodes):
-    pass
-
-def split_nodes_links(old_nodes):
-    pass
+from inline_markdown import extract_markdown_images, extract_markdown_links
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     nodes = []
@@ -34,4 +29,47 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             even = not even
         nodes.extend(new_nodes)
 
+    return nodes
+
+def split_nodes_image(old_nodes):
+    nodes = []
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            nodes.append(node)
+            continue
+
+        curr_text = node.text
+        images = extract_markdown_images(curr_text)
+
+        for image_alt, image_link in images:
+            markdown = f"![{image_alt}]({image_link})"
+            before, after = curr_text.split(markdown, 1)
+            if before:
+                nodes.append(TextNode(text=before, text_type=TextType.TEXT))
+            nodes.append(TextNode(text=image_alt, text_type=TextType.IMAGE, url=image_link))
+            curr_text = after
+        if curr_text:
+            nodes.append(TextNode(text=curr_text, text_type=TextType.TEXT))
+    return nodes
+
+
+def split_nodes_link(old_nodes):
+    nodes = []
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            nodes.append(node)
+            continue
+
+        curr_text = node.text
+        images = extract_markdown_links(curr_text)
+
+        for image_alt, image_link in images:
+            markdown = f"[{image_alt}]({image_link})"
+            before, after = curr_text.split(markdown, 1)
+            if before:
+                nodes.append(TextNode(text=before, text_type=TextType.TEXT))
+            nodes.append(TextNode(text=image_alt, text_type=TextType.LINK, url=image_link))
+            curr_text = after
+        if curr_text:
+            nodes.append(TextNode(text=curr_text, text_type=TextType.TEXT))
     return nodes
