@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
-from split_nodes import split_nodes_delimiter, split_nodes_image, split_nodes_link
+from split_nodes import split_nodes_delimiter, split_nodes_image, split_nodes_link, text_to_textnodes
 
 class TestSplitNodeDelimiter(unittest.TestCase):
     def test_single_delimiter(self):
@@ -75,11 +75,13 @@ class TestSplitNodeDelimiter(unittest.TestCase):
             TextNode(text="already bold", text_type=TextType.BOLD)
         ] 
         self.assertEqual(expected, actual)
-    
-    def test_invalid_delimiter(self):
-        node = TextNode(text="This is a code `code block` test", text_type=TextType.TEXT)
-        with self.assertRaises(ValueError):
-            _ = split_nodes_delimiter([node], 'x', TextType.CODE)
+
+    def test_delimiter_not_present(self):
+        node = TextNode(text="This text should just return itself", text_type=TextType.TEXT)
+        actual = split_nodes_delimiter(old_nodes=[node], delimiter="**", text_type=TextType.BOLD)
+        expected = [node]
+        self.assertEqual(expected, actual)
+
 
     def test_unmatched_delimiter(self):
         node = TextNode(text="this text is _italics delimiter", text_type=TextType.TEXT)
@@ -360,3 +362,71 @@ class TestSplitNodeLinks(unittest.TestCase):
             ],
             new_nodes,
         )
+    
+class TestTextToNodes(unittest.TestCase):
+    def test_full_example_all_types(self):
+        text = (
+            "This is **text** with an _italic_ word and a ```code block``` and an "
+            "![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a "
+            "[link](https://boot.dev)"
+        )
+
+        expected = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ]
+        actual = text_to_textnodes(text)
+        self.assertListEqual(expected, actual)
+
+    def test_plain_text_only(self):
+        text = "just normal text"
+        expected = [TextNode("just normal text", TextType.TEXT)]
+        actual = text_to_textnodes(text)
+        self.assertListEqual(expected, actual)
+
+    def test_multiple_bold_and_italic(self):
+        text = "**a** _b_ **c** _d_"
+        expected = [
+            TextNode("a", TextType.BOLD),
+            TextNode(" ", TextType.TEXT),
+            TextNode("b", TextType.ITALIC),
+            TextNode(" ", TextType.TEXT),
+            TextNode("c", TextType.BOLD),
+            TextNode(" ", TextType.TEXT),
+            TextNode("d", TextType.ITALIC),
+        ]
+        actual = text_to_textnodes(text)
+        self.assertListEqual(expected, actual)
+
+    def test_multiple_links_and_images(self):
+        text = (
+            "Pics: ![p1](https://a.com/1.png) and ![p2](https://b.com/2.png). "
+            "Links: [a](https://a.com) and [b](https://b.com)"
+        )
+        expected = [
+            TextNode("Pics: ", TextType.TEXT),
+            TextNode("p1", TextType.IMAGE, "https://a.com/1.png"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("p2", TextType.IMAGE, "https://b.com/2.png"),
+            TextNode(". Links: ", TextType.TEXT),
+            TextNode("a", TextType.LINK, "https://a.com"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("b", TextType.LINK, "https://b.com"),
+        ]
+        actual = text_to_textnodes(text)
+        self.assertListEqual(expected, actual)
+
+    def test_unmatched_delimiter_raises(self):
+        # If your delimiter splitters raise on invalid markdown,
+        # text_to_textnodes should also raise.
+        text = "this is **broken bold"
+        with self.assertRaises(ValueError):
+            text_to_textnodes(text)
