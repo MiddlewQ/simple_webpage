@@ -1,5 +1,17 @@
+import regex as re
+
 from .textnode import TextNode, TextType
-from .markdown_extract import extract_markdown_images, extract_markdown_links
+
+
+def text_to_textnodes(text):
+    nodes = [TextNode(text=text, text_type=TextType.TEXT)]
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    return nodes
+
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     nodes = []
@@ -75,11 +87,13 @@ def split_nodes_link(old_nodes):
             nodes.append(TextNode(text=curr_text, text_type=TextType.TEXT))
     return nodes
 
-def text_to_textnodes(text):
-    nodes = [TextNode(text=text, text_type=TextType.TEXT)]
-    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
-    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
-    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
-    nodes = split_nodes_image(nodes)
-    nodes = split_nodes_link(nodes)
-    return nodes
+def extract_markdown_images(text):
+    image_pattern = r"!\[([^\[\]]*)\]\(([^\(\)]*)\)"
+    return re.findall(image_pattern, text)
+
+
+def extract_markdown_links(text):
+    link_pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
+    return  re.findall(link_pattern, text)
+
+

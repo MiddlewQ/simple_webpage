@@ -118,4 +118,4 @@ class TestBlockTypeConversion(unittest.TestCase):
     def test_empty_paragraph(self):
         block = ""
         block_type = block_to_block_type(block)
-        self.assertEqual(BlockType.PARAGRAPH, block_type)
+        self.assertEqual(BlockType.PARAGRAPH, block_type) 

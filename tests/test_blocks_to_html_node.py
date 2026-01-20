@@ -1,50 +1,6 @@
 import unittest
-
-from src.markdown_html import *
-from src.markdown_extract import markdown_to_blocks
-from src.htmlnode import HTMLNode
-
-
-class TestMarkdownHtmlConversion(unittest.TestCase):
-
-    def test_single_block(self):
-        md = """
-This is a single block that contains
-a basic paragraph with some **bold** and some `code`
-as well as some _italics_ yeah
-"""
-        html = markdown_to_html_node(md).to_html()
-        self.assertEqual("<div><p>This is a single block that contains a basic paragraph with some <b>bold</b> and some <code>code</code> as well as some <i>italics</i> yeah</p></div>", html)
-
-
-    def test_multiple_block_types(self):
-        md = """
-# Simple paragraph with a bunch of different types
-
-This is a paragraph
-with
-a few lines
-
-```
-#include <stdio.h>
-int main() {
-    printf("Hello World!\n");
-}
-```
-
-**Bold block**
-
-Shared block **bold** _italics_ and `code`
-
-"""
-        node = markdown_to_html_node(md)
-        html = node.to_html()
-        self.assertEqual('<div><h1>Simple paragraph with a bunch of different types</h1><p>This is a paragraph with a few lines</p><pre><code>#include <stdio.h>\nint main() {\n    printf("Hello World!\n");\n}</code></pre><p><b>Bold block</b></p><p>Shared block <b>bold</b> <i>italics</i> and <code>code</code></p></div>', html)
-
-    def test_empty(self):
-        html = markdown_to_html_node("").to_html()
-        self.assertEqual("<div></div>", html)
-
+from src.markdown_to_blocks import markdown_to_blocks
+from src.blocks_to_html_node import block_to_html_paragraph, block_to_html_heading, block_to_html_code, block_to_html_quote, block_to_html_ordered_list, block_to_html_unordered_list
 
 class TestMarkdownHtmlParagraph(unittest.TestCase):
 
@@ -248,3 +204,4 @@ class TestMarkdownHtmlQuote(unittest.TestCase):
         block = "> **a**_b_"
         html = block_to_html_quote(block).to_html()
         self.assertEqual("<blockquote><b>a</b><i>b</i></blockquote>", html)
+
