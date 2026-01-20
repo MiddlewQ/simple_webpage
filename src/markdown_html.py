@@ -67,14 +67,10 @@ def block_to_html_ordered_list(block):
     return ParentNode("ol", children=html_items)
 
 def block_to_html_quote(block):
-    lines = block.split("\n")
-    html_items = []
-    for line in lines:
-        content = line[2:]
-        textnodes = text_to_textnodes(content)
-        children = [text_node_to_html_node(node) for node in textnodes]        
-        html_items.extend(children)
-
+    lines = [line[2:] for line in block.split("\n")]
+    content = " ".join(lines)
+    textnodes = text_to_textnodes(content)
+    html_items = [text_node_to_html_node(node) for node in textnodes]
     return ParentNode("blockquote", children=html_items)
 
 
