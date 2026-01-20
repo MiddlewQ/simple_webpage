@@ -19,6 +19,11 @@ class TestBlockTypeConversion(unittest.TestCase):
         block_type = block_to_block_type(block)
         self.assertEqual(BlockType.PARAGRAPH, block_type)
 
+    def test_heading_multiline_invalid(self):
+        block = "# Heading with newline invalid\nsecond line"
+        block_type = block_to_block_type(block)
+        self.assertEqual(BlockType.PARAGRAPH, block_type)
+
     def test_heading_missing_space(self):
         block = "#Woops I forgot the space"
         block_type = block_to_block_type(block)

@@ -13,7 +13,7 @@ class BlockType(Enum):
 
 def block_to_block_type(block):
     # Headings
-    if re.match(r"^#{1,6} .+?", block):
+    if re.match(r"^#{1,6} .+$", block):
         return BlockType.HEADING
     
     # Code Blocks
