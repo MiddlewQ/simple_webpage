@@ -366,10 +366,11 @@ class TestSplitNodeLinks(unittest.TestCase):
 class TestTextToNodes(unittest.TestCase):
     def test_full_example_all_types(self):
         text = (
-            "This is **text** with an _italic_ word and a ```code block``` and an "
+            "This is **text** with an _italic_ word and a `code block` and an "
             "![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a "
             "[link](https://boot.dev)"
         )
+        actual = text_to_textnodes(text)
 
         expected = [
             TextNode("This is ", TextType.TEXT),
@@ -383,7 +384,6 @@ class TestTextToNodes(unittest.TestCase):
             TextNode(" and a ", TextType.TEXT),
             TextNode("link", TextType.LINK, "https://boot.dev"),
         ]
-        actual = text_to_textnodes(text)
         self.assertListEqual(expected, actual)
 
     def test_plain_text_only(self):
@@ -394,6 +394,7 @@ class TestTextToNodes(unittest.TestCase):
 
     def test_multiple_bold_and_italic(self):
         text = "**a** _b_ **c** _d_"
+        actual = text_to_textnodes(text)
         expected = [
             TextNode("a", TextType.BOLD),
             TextNode(" ", TextType.TEXT),
@@ -403,7 +404,6 @@ class TestTextToNodes(unittest.TestCase):
             TextNode(" ", TextType.TEXT),
             TextNode("d", TextType.ITALIC),
         ]
-        actual = text_to_textnodes(text)
         self.assertListEqual(expected, actual)
 
     def test_multiple_links_and_images(self):
@@ -411,6 +411,7 @@ class TestTextToNodes(unittest.TestCase):
             "Pics: ![p1](https://a.com/1.png) and ![p2](https://b.com/2.png). "
             "Links: [a](https://a.com) and [b](https://b.com)"
         )
+        actual = text_to_textnodes(text)
         expected = [
             TextNode("Pics: ", TextType.TEXT),
             TextNode("p1", TextType.IMAGE, "https://a.com/1.png"),
@@ -421,7 +422,6 @@ class TestTextToNodes(unittest.TestCase):
             TextNode(" and ", TextType.TEXT),
             TextNode("b", TextType.LINK, "https://b.com"),
         ]
-        actual = text_to_textnodes(text)
         self.assertListEqual(expected, actual)
 
     def test_unmatched_delimiter_raises(self):

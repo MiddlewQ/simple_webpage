@@ -1,0 +1,243 @@
+import unittest
+
+from src.markdown_html import *
+from src.markdown_extract import markdown_to_blocks
+from src.htmlnode import HTMLNode
+
+
+class TestMarkdownHtmlConversion(unittest.TestCase):
+
+    def test_single_block(self):
+        md = """
+This is a single block that contains
+a basic paragraph with some **bold** and some `code`
+as well as some _italics_ yeah
+"""
+        html = markdown_to_html_node(md).to_html()
+        self.assertEqual("<div><p>This is a single block that contains a basic paragraph with some <b>bold</b> and some <code>code</code> as well as some <i>italics</i> yeah</p></div>", html)
+
+
+    def test_multiple_block_types(self):
+        md = """
+# Simple paragraph with a bunch of different types
+
+This is a paragraph
+with
+a few lines
+
+```
+#include <stdio.h>
+int main() {
+    printf("Hello World!\n");
+}
+```
+
+**Bold block**
+
+Shared block **bold** _italics_ and `code`
+
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual('<div><h1>Simple paragraph with a bunch of different types</h1><p>This is a paragraph\nwith\na few lines</p><pre><code>#include <stdio.h>\nint main() {\n    printf("Hello World!\n");\n}</code><p><b>Bold block</b></p><p>Shared block <b>bold</b> <i>italics</i> and <code>code</code></p></pre></div>', html)
+
+    def test_empty(self):
+        html = markdown_to_html_node("").to_html()
+        self.assertEqual("<div></div>", html)
+
+
+class TestMarkdownHtmlParagraph(unittest.TestCase):
+
+
+    def test_singleline(self):
+        md = """This is a block with a bunch of text"""
+        block = markdown_to_blocks(md)[0]
+        node = block_to_html_paragraph(block)
+        html = node.to_html()
+        self.assertEqual("<p>This is a block with a bunch of text</p>", html)
+
+    def test_multiline(self):
+        md = """
+This is a block with a bunch of text
+Single block with multiple lines of code
+Contains only text
+"""
+        block = markdown_to_blocks(md)[0]
+        node = block_to_html_paragraph(block)
+        html = node.to_html()
+        self.assertEqual("<p>This is a block with a bunch of text Single block with multiple lines of code Contains only text</p>", html)
+    
+
+
+    def test_multi_textnodes(self):
+        md = """
+This is **bolded** paragraph
+this is some _italics_ and some `code`
+wow, incredible 
+"""
+        block = markdown_to_blocks(md)[0]
+        node = block_to_html_paragraph(block)
+        html = node.to_html()
+        self.assertEqual("<p>This is <b>bolded</b> paragraph this is some <i>italics</i> and some <code>code</code> wow, incredible</p>", html)
+
+
+# Markdown text is always on a single line, does not allow multiline heading
+class TestMarkdownHtmlHeading(unittest.TestCase):
+
+    def test_h1(self):
+        block = "# This is a large heading!"
+        node = block_to_html_heading(block) 
+        html = node.to_html()
+        self.assertEqual("<h1>This is a large heading</h1>", html)
+
+
+    def test_h2(self):
+        block = "## This is a smaller heading"
+        node = block_to_html_heading(block)
+        html = node.to_html()
+        self.assertEqual("<h2>This is a smaller heading</h2>", html)
+
+    def test_h6(self):
+        block = "###### This is the smallest heading!"
+        node = block_to_html_heading(block)
+        html = node.to_html()
+        self.assertEqual("<h6>This is the smallest heading!</h6>", html)
+
+class TestMarkdownHtmlCode(unittest.TestCase):
+    def test_singleline(self):
+        md = """```
+Code block with singleline
+```
+"""
+        block = markdown_to_blocks(md)[0]
+        node = block_to_html_code(block)
+        html = node.to_html()
+        self.assertEqual("<pre><code>Code block with a singleline</code></pre>", html)
+
+    def test_multiline(self):
+        md = """```
+a line test
+b line
+c line  
+```
+"""
+        block = markdown_to_blocks(md)[0]
+        node = block_to_html_code(block)
+        html = node.to_html()
+        self.assertEqual("<pre><code>a line test\nb line\nc line</code></pre>", html)
+
+    def test_code_block_does_not_parse_inline_markdown(self):
+        md = """```
+a **bolded**
+b _italics_
+c `this should also be fine`
+```
+"""
+        block = markdown_to_blocks(md)[0]
+        node = block_to_html_code(block)
+        html = node.to_html()
+        self.assertEqual("<pre><code>a **bolded**\nb _italics_\nc `this should also be fine`</code></pre>", html)
+
+class TestMarkdownHtmlUnorderedList(unittest.TestCase):
+    def test_singleline(self):
+        block = "- single item list"
+        node = block_to_html_ordered_list(block)
+        html = node.to_html()
+        self.assertEqual("<ul><li>single item list</li></ul>", html)
+
+    def test_multiline(self):
+        md = """
+- a item
+- b item
+- c item
+"""
+        block = markdown_to_blocks(md)[0]
+        node = block_to_html_ordered_list(block)
+        html = node.to_html()
+        self.assertequal("<ul><li>a item</li><li>b item</li><li>c item</li></ul>", html)
+
+    def test_markdown_parsing(self):
+        md = """
+- _a_ **item**
+- b `item`
+- c item
+"""
+        block = markdown_to_blocks(md)[0]
+        node = block_to_html_ordered_list(block)
+        html = node.to_html()
+        self.assertEqual("<ul><li><i>a</i> <b>item</b></li><li>b <code>item</code></li><li>c item</li></ul>", html)
+
+class TestMarkdownHtmlOrderedList(unittest.TestCase):
+    def test_single_item(self):
+        block  = "1. singleline list"
+        node = block_to_html_unordered_list(block)
+        html = node.to_html()
+        self.assertEqual("<ol><li>singleline list</li></ol>", html)
+
+
+
+    def test_multi_item(self):
+        md = """
+1. a line
+2. b line
+3. c line
+"""
+        block = markdown_to_blocks(md)[0]
+        node = block_to_html_unordered_list(block)
+        html = node.to_html()
+        self.assertEqual("<ol><li></li><li></li><li></li></ol>", html)
+
+    def test_markdown_parsing(self):
+        md = """
+1. `a line`
+2. **b** line
+3. _c line_
+"""
+        block = markdown_to_blocks(md)[0]
+        node = block_to_html_unordered_list(block)
+        html = node.to_html()
+        self.assertEqual("<ol><li><code>a line</code></li><li><<b>b</b> line/li><li><i>c line</i></li></ol>", html)
+
+
+class TestMarkdownHtmlQuote(unittest.TestCase):
+    def test_singleline(self):
+        block = "> Greentext"
+        node = block_to_html_quote(block)
+        html = node.to_html()
+        self.assertEqual("<blockquote>Greentext</blockquote>")
+
+    def test_multiline(self):
+        md = """
+> a line
+> b line
+> c line
+"""
+        block = markdown_to_blocks(md)[0]
+        node = block_to_html_quote(block)
+        html = node.to_html()
+        self.assertEqual("<blockquote>a line\nb line\nc line</blockquote>", html)
+
+    def test_markdown_parsing(self):
+        md = """
+> `a` line
+> **b l**ine
+> _c lin_e
+"""
+        block = markdown_to_blocks(md)[0]
+        node = block_to_html_quote(block)
+        html = node.to_html()
+        self.assertEqual("<blockquote><code>a</code> line\n<b>b l</b>ine\n<i>c lin</i>e</blockquote>", html)
+
+
+# class TestMarkdownHtml(unittest.TestCase):
+#     def test_(self):
+#         md = """
+# This is a block with a bunch of text
+# Single block with multiple lines of code
+# Contains no complicated intentation or similar
+# """
+#         block = markdown_to_blocks(md)[0]
+#         node = block_to_html_quote(block)
+#         html = node.to_html()
+#         self.assertEqual("", html)
+
