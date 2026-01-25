@@ -8,6 +8,7 @@ def clean_directory(directory):
         sys.exit(1)
     try:
         shutil.rmtree(directory)
+        os.mkdir(directory)
     except OSError as e:
         print(f"Failed to delete {directory}: {e}", file=sys.stderr)
         sys.exit(1)
@@ -34,10 +35,8 @@ def main():
     source = "static"
     destination = "public"
     clean_directory(destination)
-    os.mkdir(destination)
     copy_directory(source, destination)
    
-    pass
 
 
 if __name__ == "__main__":
