@@ -1,19 +1,18 @@
 import os, shutil, sys
 
-from src.markdown_to_html_node import markdown_to_html_node
-
+from .markdown_to_html_node import markdown_to_html_node
+from .page_generator import generate_page
 def clean_directory(directory):
-    if not os.path.isdir(directory):
-        print(f"Directory {directory} not found", file=sys.stderr)
-        sys.exit(1)
     try:
-        shutil.rmtree(directory)
-        os.mkdir(directory)
+        if os.path.exists(directory):
+            shutil.rmtree(directory)
+        os.makedirs(directory, exist_ok=True)
+
     except OSError as e:
         print(f"Failed to delete {directory}: {e}", file=sys.stderr)
         sys.exit(1)
 
-def copy_directory(source_directory, destination_directory):
+def generate_pages_recursively(source_directory, destination_directory, template_path):
     if not os.path.isdir(source_directory):
         print(f"Source directory {source_directory} not found")
         sys.exit(1)
@@ -24,19 +23,29 @@ def copy_directory(source_directory, destination_directory):
     for entity in os.listdir(source_directory):
         source_filepath = os.path.join(source_directory, entity)
         destination_filepath = os.path.join(destination_directory, entity)
+
         if os.path.isfile(source_filepath):
-            shutil.copy(source_filepath, destination_filepath)
+            if source_filepath.endswith(".md"):
+                print(destination_filepath)
+                destination_filepath = destination_filepath[:-2] + "html"
+                generate_page(source_filepath, template_path, destination_filepath)
+            else:
+                shutil.copy(source_filepath, destination_filepath)
+        
         elif os.path.isdir(source_filepath):
-            os.mkdir(destination_filepath)
-            copy_directory(source_filepath, destination_filepath)
+            os.mkdirs(destination_filepath)
+            generate_pages_recursively(source_filepath, destination_filepath, template_path)
 
 
 def main():
-    source = "static"
+    static = "static"
+    source = "content"
     destination = "public"
+    template = "template.html"
+
     clean_directory(destination)
-    copy_directory(source, destination)
-   
+    generate_pages_recursively(static, destination, template)
+    generate_pages_recursively(source, destination, template)
 
 
 if __name__ == "__main__":
