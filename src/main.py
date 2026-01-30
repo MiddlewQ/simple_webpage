@@ -12,7 +12,7 @@ def clean_directory(directory):
         print(f"Failed to delete {directory}: {e}", file=sys.stderr)
         sys.exit(1)
 
-def generate_pages_recursively(source_directory, destination_directory, template_path):
+def generate_pages_recursively(source_directory, destination_directory, template_path, basepath):
     if not os.path.isdir(source_directory):
         print(f"Source directory {source_directory} not found")
         sys.exit(1)
@@ -28,7 +28,7 @@ def generate_pages_recursively(source_directory, destination_directory, template
             if source_filepath.endswith(".md"):
                 print(destination_filepath)
                 destination_filepath = destination_filepath[:-2] + "html"
-                generate_page(source_filepath, template_path, destination_filepath)
+                generate_page(source_filepath, template_path, destination_filepath, basepath)
             else:
                 shutil.copy(source_filepath, destination_filepath)
         
@@ -38,14 +38,18 @@ def generate_pages_recursively(source_directory, destination_directory, template
 
 
 def main():
+
     static = "static"
     source = "content"
     destination = "public"
     template = "template.html"
+    basepath = sys.argv[1] if len(sys.argv) >= 2 else "/"
+
+
 
     clean_directory(destination)
-    generate_pages_recursively(static, destination, template)
-    generate_pages_recursively(source, destination, template)
+    generate_pages_recursively(static, destination, template, basepath)
+    generate_pages_recursively(source, destination, template, basepath)
 
 
 if __name__ == "__main__":
