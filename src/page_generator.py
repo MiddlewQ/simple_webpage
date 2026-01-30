@@ -10,7 +10,7 @@ def extract_title(markdown):
 
 
 def generate_page(source_path, template_path, destination_path, basepath):
-    print(f"Generating path from {source_path} to {destination_path} using {template_path}")
+    print(f"Generating: {source_path:40} -> {destination_path}")
 
     if not os.path.isfile(source_path):
         print("No source")

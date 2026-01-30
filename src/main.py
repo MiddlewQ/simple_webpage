@@ -26,15 +26,14 @@ def generate_pages_recursively(source_directory, destination_directory, template
 
         if os.path.isfile(source_filepath):
             if source_filepath.endswith(".md"):
-                print(destination_filepath)
                 destination_filepath = destination_filepath[:-2] + "html"
                 generate_page(source_filepath, template_path, destination_filepath, basepath)
             else:
                 shutil.copy(source_filepath, destination_filepath)
         
         elif os.path.isdir(source_filepath):
-            os.mkdirs(destination_filepath)
-            generate_pages_recursively(source_filepath, destination_filepath, template_path)
+            os.makedirs(destination_filepath)
+            generate_pages_recursively(source_filepath, destination_filepath, template_path, basepath)
 
 
 def main():
